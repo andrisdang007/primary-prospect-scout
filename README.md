@@ -14,13 +14,19 @@ Built as part of a growth teardown for Primary's Growth Generalist role — see 
 ## Setup
 
 ```bash
-pip install anthropic rich
+pip install anthropic rich gspread
 export ANTHROPIC_API_KEY=your_key_here
 ```
 
+For Google Sheets output, a one-time OAuth flow is required on first use:
+1. Go to [Google Cloud Console](https://console.cloud.google.com) → APIs & Services → Credentials
+2. Create an **OAuth 2.0 Client ID** (Desktop app) and download the JSON
+3. Save it to `~/.config/gspread/credentials.json`
+4. On first `--sheets` run, a browser window opens to authenticate — token is then cached
+
 ## Usage
 
-Score companies (non-biotech companies are skipped):
+Score companies (non-biotech are skipped automatically):
 ```bash
 python prospect_scout.py "Canva" "Vaxine" "Umbo"
 ```
@@ -28,6 +34,11 @@ python prospect_scout.py "Canva" "Vaxine" "Umbo"
 Score + generate outreach for the top prospect:
 ```bash
 python prospect_scout.py "Vaxine" "Umbo" "Halo Diagnostics" --email
+```
+
+Score + save results to a Google Sheet:
+```bash
+python prospect_scout.py "Vaxine" "Umbo" --sheets YOUR_SHEET_ID
 ```
 
 ## Example output

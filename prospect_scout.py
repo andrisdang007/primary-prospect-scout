@@ -16,6 +16,13 @@ import sys
 import time
 
 try:
+    import gspread
+    from gspread.exceptions import SpreadsheetNotFound
+    GSPREAD_AVAILABLE = True
+except ImportError:
+    GSPREAD_AVAILABLE = False
+
+try:
     from rich.console import Console
     from rich.panel import Panel
     from rich.table import Table
@@ -227,6 +234,46 @@ def print_emails(company: str, emails: list) -> None:
             print(email["body"])
 
 
+def write_to_sheets(results: list, sheet_id: str) -> str:
+    """Append scored results to a Google Sheet. Returns the sheet URL."""
+    gc = gspread.oauth()
+    sh = gc.open_by_key(sheet_id)
+    ws = sh.sheet1
+
+    headers = [
+        "Company", "Score", "Funding Stage", "Cash Balance",
+        "International", "Treasury Need", "Key Signals",
+        "Contact", "Trigger", "Personalized First Line",
+    ]
+
+    if ws.row_count == 0 or ws.acell("A1").value != "Company":
+        ws.clear()
+        ws.append_row(headers, value_input_option="RAW")
+        ws.format("A1:J1", {
+            "textFormat": {"bold": True},
+            "backgroundColor": {"red": 0.18, "green": 0.18, "blue": 0.18},
+        })
+
+    rows = []
+    for p in results:
+        scores = p.get("scores", {})
+        rows.append([
+            p.get("company", ""),
+            p.get("total_score", ""),
+            scores.get("funding_stage", ""),
+            scores.get("cash_balance", ""),
+            scores.get("international", ""),
+            scores.get("treasury_need", ""),
+            " | ".join(p.get("key_signals", [])),
+            p.get("recommended_contact", ""),
+            p.get("trigger", ""),
+            p.get("personalized_first_line", ""),
+        ])
+
+    ws.append_rows(rows, value_input_option="RAW")
+    return f"https://docs.google.com/spreadsheets/d/{sheet_id}"
+
+
 def main():
     parser = argparse.ArgumentParser(
         description="Score companies against Primary's ICP and generate personalized outreach",
@@ -235,6 +282,7 @@ def main():
     )
     parser.add_argument("companies", nargs="+", help="Company names to research and score")
     parser.add_argument("--email", action="store_true", help="Generate 3-email sequence for top prospect")
+    parser.add_argument("--sheets", metavar="SHEET_ID", help="Google Sheet ID to append results to")
     args = parser.parse_args()
 
     client = anthropic.Anthropic()
@@ -320,6 +368,19 @@ def main():
                         sys.exit(1)
 
         print_emails(top["company"], emails)
+
+    if args.sheets:
+        if not GSPREAD_AVAILABLE:
+            print("gspread not installed — run: pip install gspread")
+            sys.exit(1)
+        if RICH_AVAILABLE:
+            with console.status("[bold cyan]Writing to Google Sheets…[/bold cyan]", spinner="dots"):
+                url = write_to_sheets(results, args.sheets)
+            console.print(f"\n[bold green]✓[/bold green] Results saved → {url}")
+        else:
+            print("Writing to Google Sheets…")
+            url = write_to_sheets(results, args.sheets)
+            print(f"✓ Results saved → {url}")
 
 
 if __name__ == "__main__":
