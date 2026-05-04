@@ -35,11 +35,11 @@ Primary is a treasury management platform for growth companies. Core value props
 - SEC-registered (US) + AFSL-licensed (AU)
 
 Ideal customer profile:
-- Series A–C VC-backed company, recently raised ($5M–$100M)
+- Series A–C VC-backed biotech company, recently raised ($5M–$100M)
 - $3M+ in idle cash
 - Multi-entity, multi-currency, or expanding internationally (AU, US, NZ, UK, EU)
 - Finance team managing treasury via spreadsheets
-- Industries: SaaS, healthtech, fintech, e-commerce, legaltech, hardware
+- Industries: biotech, biopharma, genomics, medtech, drug discovery, clinical-stage therapeutics
 
 Proof points:
 - Constantinople: $127K saved annually on currency conversions
@@ -47,6 +47,21 @@ Proof points:
 - Blinq: 1,200 manual transfers automated per year
 - Average ROI within 7 days of implementation
 """
+
+
+def is_biotech(client: anthropic.Anthropic, company_name: str) -> bool:
+    """Return True if the company is a biotech/biopharma/life-sciences company."""
+    response = client.messages.create(
+        model="claude-sonnet-4-6",
+        max_tokens=16,
+        tools=[{"type": "web_search_20250305", "name": "web_search", "max_uses": 2}],
+        messages=[{
+            "role": "user",
+            "content": f"Is {company_name} a biotech, biopharma, genomics, medtech, or life-sciences company? Reply with only YES or NO."
+        }]
+    )
+    text = "".join(block.text for block in response.content if hasattr(block, "text")).strip().upper()
+    return text.startswith("YES")
 
 
 def research_and_score(client: anthropic.Anthropic, company_name: str) -> dict:
@@ -121,15 +136,18 @@ Company context:
 - Trigger: {prospect['trigger']}
 - Personalized opener: {prospect['personalized_first_line']}
 
-Email 1 (Day 1): Lead with the personalized opener, pitch the core value prop, CTA for 15-min call.
-Email 2 (Day 5): Short follow-up. Offer a concrete next step (custom yield estimate based on their raise).
+The person you're emailing is a biotech founder. Their primary concern is runway — every month of cash buys another shot at a clinical milestone, a regulatory filing, or the next raise. Primary extends runway by putting idle capital to work (4.5%+ yield) without touching their banking setup. Lead with runway, not features.
+
+Email 1 (Day 1): Lead with the personalized opener, frame the pitch around extending runway, CTA for 15-min call.
+Email 2 (Day 5): Short follow-up. Offer a concrete next step — e.g. a custom estimate of how many extra months of runway they'd get based on their raise size.
 Email 3 (Day 12): Honest breakup email. No pressure, leave the door open.
 
 Rules:
 - 4 sentences max per email
 - No "I hope this finds you well" or similar filler
-- Peer-to-peer tone — not salesy, not overly formal
+- Peer-to-peer tone — founder to founder, not salesy
 - Each email has a subject line
+- Never mention "treasury" as a category — biotech founders don't think of themselves as treasury managers. Talk about runway, idle cash, and yield.
 
 Return ONLY a JSON array:
 [
@@ -224,6 +242,10 @@ def main():
 
     for company in args.companies:
         if RICH_AVAILABLE:
+            with console.status(f"[bold cyan]Checking {company}…[/bold cyan]", spinner="dots"):
+                if not is_biotech(client, company):
+                    console.print(f"  [dim]—[/dim] {company} — skipped (not biotech)")
+                    continue
             with console.status(f"[bold cyan]Researching {company}…[/bold cyan]", spinner="dots"):
                 for attempt in range(3):
                     try:
@@ -240,6 +262,10 @@ def main():
                         console.print(f"  [red]✗[/red] {company} — {e}")
                         break
         else:
+            print(f"Checking {company}...")
+            if not is_biotech(client, company):
+                print(f"  — {company} — skipped (not biotech)")
+                continue
             print(f"Researching {company}...")
             for attempt in range(3):
                 try:
