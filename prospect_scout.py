@@ -106,7 +106,7 @@ Return ONLY a JSON object with this exact structure:
   ],
   "recommended_contact": "<exact job title — e.g. CFO, Head of Finance, VP Finance>",
   "trigger": "<the specific event or fact that makes now the right time to reach out>",
-  "personalized_first_line": "<1 punchy sentence for a cold email — reference something specific about their funding, growth, or business>"
+  "linkedin_url": "<LinkedIn company page URL, e.g. https://www.linkedin.com/company/company-name — leave empty string if not found>"
 }}"""
         }]
     )
@@ -141,7 +141,6 @@ Company context:
 - Key signals: {', '.join(prospect['key_signals'])}
 - Best contact: {prospect['recommended_contact']}
 - Trigger: {prospect['trigger']}
-- Personalized opener: {prospect['personalized_first_line']}
 
 The person you're emailing is a biotech founder. Their primary concern is runway — every month of cash buys another shot at a clinical milestone, a regulatory filing, or the next raise. Primary extends runway by putting idle capital to work (4.5%+ yield) without touching their banking setup. Lead with runway, not features.
 
@@ -244,7 +243,7 @@ def write_to_sheets(results: list, sheet_id: str) -> str:
     headers = [
         "Company", "Score", "Funding Stage", "Cash Balance",
         "International", "Treasury Need", "Key Signals",
-        "Contact", "Trigger", "Personalized First Line",
+        "Contact", "Trigger", "LinkedIn",
     ]
 
     if ws.row_count == 0 or ws.acell("A1").value != "Company":
@@ -268,7 +267,7 @@ def write_to_sheets(results: list, sheet_id: str) -> str:
             " | ".join(p.get("key_signals", [])),
             p.get("recommended_contact", ""),
             p.get("trigger", ""),
-            p.get("personalized_first_line", ""),
+            p.get("linkedin_url", ""),
         ])
 
     ws.append_rows(rows, value_input_option="RAW")
