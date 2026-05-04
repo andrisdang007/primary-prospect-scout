@@ -50,6 +50,19 @@ python prospect_scout.py "Vaxine" "Umbo" --sheets 1DBrv7HL3uJ4yL0cUOmtCwl_03xltp
  └──────────────────────┴──────────┴──────────────────┴──────────────────────────────────┘
 ```
 
+## Scoring criteria
+
+Each company is scored 0–100 across 4 categories (25 points each):
+
+| Category | What it's measuring | High score signals |
+|---|---|---|
+| **Funding Stage** | Series A–C VC-backed, raised recently | Closed in last 12 months, $5M–$100M round |
+| **Cash Balance** | Likely $3M+ in idle cash based on raise size and burn | Large raise + pre-revenue + early headcount = lots of idle cash |
+| **International** | Multi-entity, multi-currency, or cross-border operations | AU + US entities, USD/AUD exposure, global clinical trials |
+| **Treasury Need** | Finance team thin enough to be managing cash via spreadsheets | No CFO, small team, CEO owns treasury decisions |
+
+**Score thresholds:** ● 70+ (strong fit) · ◐ 45–69 (worth a look) · ○ below 45 (too early or wrong profile)
+
 ## How this connects to the growth strategy
 
 The tool automates the first three steps of the **funding-trigger outbound** playbook from the teardown:
