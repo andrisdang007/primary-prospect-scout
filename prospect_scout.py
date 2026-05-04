@@ -12,12 +12,12 @@ Usage:
 import anthropic
 import argparse
 import json
+import os
 import sys
 import time
 
 try:
     import gspread
-    from gspread.exceptions import SpreadsheetNotFound
     GSPREAD_AVAILABLE = True
 except ImportError:
     GSPREAD_AVAILABLE = False
@@ -236,7 +236,8 @@ def print_emails(company: str, emails: list) -> None:
 
 def write_to_sheets(results: list, sheet_id: str) -> str:
     """Append scored results to a Google Sheet. Returns the sheet URL."""
-    gc = gspread.oauth()
+    sa_path = os.path.expanduser("~/.config/gspread/service_account.json")
+    gc = gspread.service_account(filename=sa_path)
     sh = gc.open_by_key(sheet_id)
     ws = sh.sheet1
 

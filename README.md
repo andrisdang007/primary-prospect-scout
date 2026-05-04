@@ -18,11 +18,7 @@ pip install anthropic rich gspread
 export ANTHROPIC_API_KEY=your_key_here
 ```
 
-For Google Sheets output, a one-time OAuth flow is required on first use:
-1. Go to [Google Cloud Console](https://console.cloud.google.com) → APIs & Services → Credentials
-2. Create an **OAuth 2.0 Client ID** (Desktop app) and download the JSON
-3. Save it to `~/.config/gspread/credentials.json`
-4. On first `--sheets` run, a browser window opens to authenticate — token is then cached
+Google Sheets output uses a service account — no interactive auth required. The credentials are already configured at `~/.config/gspread/service_account.json`.
 
 ## Usage
 
@@ -38,7 +34,7 @@ python prospect_scout.py "Vaxine" "Umbo" "Halo Diagnostics" --email
 
 Score + save results to a Google Sheet:
 ```bash
-python prospect_scout.py "Vaxine" "Umbo" --sheets YOUR_SHEET_ID
+python prospect_scout.py "Vaxine" "Umbo" --sheets 1DBrv7HL3uJ4yL0cUOmtCwl_03xltpaWmEOFrlRj2vKo
 ```
 
 ## Example output
