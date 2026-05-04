@@ -50,6 +50,33 @@ python prospect_scout.py "Vaxine" "Umbo" --sheets 1DBrv7HL3uJ4yL0cUOmtCwl_03xltp
  └──────────────────────┴──────────┴──────────────────┴──────────────────────────────────┘
 ```
 
+## Funding Monitor
+
+`funding_monitor.py` automatically scans TechCrunch, Startup Daily, AFR, Crunchbase, and LinkedIn for recent AU/NZ biotech funding announcements, scores every discovered company, and appends results to the Google Sheet.
+
+```bash
+# Scan last 7 days (default)
+python funding_monitor.py
+
+# Scan last 14 days
+python funding_monitor.py --days 14
+
+# Custom sheet
+python funding_monitor.py --sheets SHEET_ID
+
+# Print only, skip Sheets
+python funding_monitor.py --no-sheets
+```
+
+Run this weekly (or set up a cron job) to keep the sheet topped up with fresh prospects the moment they announce a raise. Typical flow:
+
+1. Monitor finds "Vaxine raised $28M Series B" on Startup Daily
+2. Scores Vaxine against Primary's ICP → 84/100
+3. Appends to sheet with contact, trigger, and LinkedIn URL
+4. You reach out within 48 hours while the cash is still sitting idle
+
+---
+
 ## Scoring criteria
 
 Each company is scored 0–100 across 4 categories (25 points each):
