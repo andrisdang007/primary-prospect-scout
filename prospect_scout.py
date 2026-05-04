@@ -58,17 +58,24 @@ Proof points:
 
 def is_biotech(client: anthropic.Anthropic, company_name: str) -> bool:
     """Return True if the company is a biotech/biopharma/life-sciences company."""
-    response = client.messages.create(
-        model="claude-sonnet-4-6",
-        max_tokens=16,
-        tools=[{"type": "web_search_20250305", "name": "web_search", "max_uses": 2}],
-        messages=[{
-            "role": "user",
-            "content": f"Is {company_name} a biotech, biopharma, genomics, medtech, or life-sciences company? Reply with only YES or NO."
-        }]
-    )
-    text = "".join(block.text for block in response.content if hasattr(block, "text")).strip().upper()
-    return text.startswith("YES")
+    for attempt in range(3):
+        try:
+            response = client.messages.create(
+                model="claude-sonnet-4-6",
+                max_tokens=128,
+                tools=[{"type": "web_search_20250305", "name": "web_search", "max_uses": 2}],
+                messages=[{
+                    "role": "user",
+                    "content": f"Is {company_name} a biotech, biopharma, genomics, medtech, or life-sciences company? Reply with only YES or NO."
+                }]
+            )
+            text = "".join(block.text for block in response.content if block.type == "text").strip().upper()
+            return text.startswith("YES")
+        except anthropic.RateLimitError:
+            if attempt < 2:
+                time.sleep(30)
+            else:
+                return False
 
 
 def research_and_score(client: anthropic.Anthropic, company_name: str) -> dict:
@@ -294,6 +301,7 @@ def main():
                 if not is_biotech(client, company):
                     console.print(f"  [dim]—[/dim] {company} — skipped (not biotech)")
                     continue
+            time.sleep(5)
             with console.status(f"[bold cyan]Researching {company}…[/bold cyan]", spinner="dots"):
                 for attempt in range(3):
                     try:
@@ -314,6 +322,7 @@ def main():
             if not is_biotech(client, company):
                 print(f"  — {company} — skipped (not biotech)")
                 continue
+            time.sleep(5)
             print(f"Researching {company}...")
             for attempt in range(3):
                 try:
