@@ -1,14 +1,15 @@
 # Primary Prospect Scout
 
-Researches companies, scores them against Primary's ICP, and generates personalized outbound sequences.
+Researches **biotech companies**, scores them against Primary's ICP, and generates personalized outbound sequences — framed around runway extension, the core pain for every biotech founder.
 
 Built as part of a growth teardown for Primary's Growth Generalist role — see [`teardown.md`](teardown.md) for the full strategic brief.
 
 ## What it does
 
-1. **Researches** each company using Claude's web search
-2. **Scores** them 0–100 against Primary's ICP (funding stage, cash balance, international ops, treasury complexity)
-3. **Generates** a 3-email outbound sequence for the top-scoring prospect
+1. **Filters** each company — non-biotech companies are skipped automatically
+2. **Researches** each biotech company using Claude's web search
+3. **Scores** them 0–100 against Primary's ICP (funding stage, cash balance, international ops, treasury need)
+4. **Generates** a 3-email outbound sequence for the top-scoring prospect, framed around extending runway
 
 ## Setup
 
@@ -19,34 +20,35 @@ export ANTHROPIC_API_KEY=your_key_here
 
 ## Usage
 
-Score companies:
+Score companies (non-biotech companies are skipped):
 ```bash
-python prospect_scout.py "SafetyCulture" "Canva" "Airwallex"
+python prospect_scout.py "Canva" "Vaxine" "Umbo"
 ```
 
 Score + generate outreach for the top prospect:
 ```bash
-python prospect_scout.py "SafetyCulture" "Canva" "Airwallex" --email
+python prospect_scout.py "Vaxine" "Umbo" "Halo Diagnostics" --email
 ```
 
 ## Example output
 
 ```
   Primary — ICP Scoring
- ┌──────────────────┬──────────┬──────────────────┬──────────────────────────┐
- │ Company          │  Score   │ Contact          │ Trigger                  │
- ├──────────────────┼──────────┼──────────────────┼──────────────────────────┤
- │ ● SafetyCulture  │ 88/100   │ CFO              │ $32M Series C, expanding │
- │ ◐ Canva          │ 52/100   │ VP Finance       │ Multi-entity AU/US/EU    │
- └──────────────────┴──────────┴──────────────────┴──────────────────────────┘
+ ┌──────────────────────┬──────────┬──────────────────┬──────────────────────────────────┐
+ │ Company              │  Score   │ Contact          │ Trigger                          │
+ ├──────────────────────┼──────────┼──────────────────┼──────────────────────────────────┤
+ │ ● Vaxine             │ 84/100   │ CFO              │ $28M Series B, AU/US dual-entity │
+ │ ◐ Halo Diagnostics   │ 51/100   │ Head of Finance  │ $9M Series A, expanding to UK    │
+ │ — Canva              │ skipped  │ —                │ not biotech                      │
+ └──────────────────────┴──────────┴──────────────────┴──────────────────────────────────┘
 ```
 
 ## How this connects to the growth strategy
 
 The tool automates the first three steps of the **funding-trigger outbound** playbook from the teardown:
 
-1. Identify companies that recently raised → run through Prospect Scout
+1. Identify biotech companies that recently raised → run through Prospect Scout
 2. Score against ICP → prioritize outreach
-3. Generate personalized first lines → human reviews and sends
+3. Generate runway-focused outreach → human reviews and sends
 
-A single SDR running this against weekly funding announcements could generate 5–10 qualified demos per week.
+Biotech is a high-conviction vertical for Primary: pre-revenue companies sitting on large raise proceeds with zero yield, burning cash toward milestones. Every month of extra runway matters.
